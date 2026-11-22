@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PadRemote – Appairage</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f5f6f8; --card:#fff; --text:#15171c; --muted:#5d6370; --line:#e3e5ea; --accent:#3b6cff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0c0d11; --card:#16181f; --text:#eef0f4; --muted:#9097a6; --line:#262a33; } }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--text);
+         font: 16px/1.5 "Segoe UI", system-ui, sans-serif; padding: 24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:20px; max-width:880px; width:100%;
+          display:grid; grid-template-columns: 300px 1fr; gap: 36px; padding: 36px; }
+  @media (max-width: 760px) { .card { grid-template-columns: 1fr; } }
+  h1 { margin:0 0 4px; font-size: 26px; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  #qr { background:#fff; padding:16px; border-radius:16px; width:300px; height:300px; display:grid; place-items:center; text-align:center; }
+  #qr img, #qr canvas { width:268px !important; height:268px !important; }
+  .pin { font: 700 40px/1 "Cascadia Mono", Consolas, monospace; letter-spacing: 6px; margin: 4px 0 20px; }
+  ol { padding-left: 20px; margin: 0 0 16px; }
+  li { margin: 6px 0; }
+  code { background: color-mix(in srgb, var(--accent) 12%, transparent); padding: 1px 6px; border-radius: 6px; font-size: 14px; }
+  small, .muted { color: var(--muted); }
+  ul { padding-left: 20px; margin: 4px 0 16px; }
+  .label { text-transform: uppercase; font-size: 12px; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div>
+      <div id="qr"><span class="muted">QR code indisponible hors ligne.<br>Saisissez l'adresse et le PIN dans l'app.</span></div>
+      <p class="muted" style="text-align:center;margin:12px 0 0">Scannez avec l'appareil photo de l'iPhone<br>puis touchez « Ouvrir dans PadRemote »</p>
+    </div>
+    <div>
+      <h1>PadRemote</h1>
+      <p class="sub">Connectez l'app iPhone à <strong>{{HOST}}</strong></p>
+      <div class="label">Code PIN</div>
+      <div class="pin">{{PIN}}</div>
+      <ol>
+        <li>iPhone et PC sur le <strong>même réseau</strong> (Wi-Fi ou partage de connexion).</li>
+        <li>Ouvrez l'app <strong>PadRemote</strong> : le PC apparaît tout seul dans la liste.</li>
+        <li>Ou scannez ce QR code avec l'appareil photo : l'app se connecte directement.</li>
+        <li>À la première ouverture, autorisez l'accès au <strong>réseau local</strong>.</li>
+      </ol>
+      <div class="label">Connexion manuelle</div>
+      <ul>{{URLS}}</ul>
+      <p class="muted" style="font-size:14px;margin:0">Sans l'app : version web dans Safari, <code>{{WEBURL}}</code></p>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    if (window.QRCode) {
+      const el = document.getElementById('qr');
+      el.textContent = '';
+      new QRCode(el, { text: "{{URL}}", width: 268, height: 268, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# Contient le code PIN : ne jamais publier
+server/config.json
+server/padremote.log
+__pycache__/
+
+# Fichiers générés (projet Xcode, compilation, IPA)
+ios/PadRemote.xcodeproj/
+ios/build/
+ios/Payload/
+*.ipa

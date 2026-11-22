@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PadRemote">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0a0b0f">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+<title>PadRemote</title>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <button id="status" class="status" type="button" aria-label="État de la connexion">
+      <span class="dot"></span><span id="status-text">Connexion…</span>
+    </button>
+    <span id="latency" class="latency"></span>
+  </header>
+
+  <main>
+    <!-- ============================== SOURIS ============================== -->
+    <section id="view-mouse" class="view active" data-view="mouse">
+      <div id="padwrap">
+        <div id="pad" aria-label="Pavé tactile">
+          <div id="padhint">
+            <div><b>1 doigt</b> déplacer · toucher = clic</div>
+            <div><b>2 doigts</b> défiler · toucher = clic droit · pincer = zoom</div>
+            <div><b>3 doigts</b> toucher = clic milieu · glisser = fenêtres</div>
+            <div><b>Toucher 2×</b> puis glisser = sélectionner / déplacer</div>
+          </div>
+          <div id="padoff">Hors ligne<br><small>Reconnexion…</small></div>
+        </div>
+        <div id="strip" aria-label="Molette"></div>
+        <button id="kbtoggle" class="fab" type="button" aria-label="Clavier"></button>
+      </div>
+
+      <div id="keybar"></div>
+
+      <div id="mbuttons">
+        <button class="mbtn" data-btn="l" type="button">Gauche</button>
+        <button class="mbtn mid" data-btn="m" type="button" aria-label="Clic milieu"><span></span></button>
+        <button class="mbtn" data-btn="r" type="button">Droit</button>
+      </div>
+    </section>
+
+    <!-- ============================== CLAVIER ============================= -->
+    <section id="view-keys" class="view scroll" data-view="keys">
+      <div class="card">
+        <textarea id="compose" rows="3" placeholder="Écrivez ou dictez ici, puis envoyez au PC…" autocomplete="off"></textarea>
+        <div class="row3">
+          <button class="btn" id="send-txt" type="button">Envoyer</button>
+          <button class="btn" id="send-txt-enter" type="button">Envoyer + ⏎</button>
+          <button class="btn accent" id="live-btn" type="button">Saisie directe</button>
+        </div>
+      </div>
+      <h2>Modificateurs <small>1 toucher = une fois · 2 = verrouillé</small></h2>
+      <div class="grid g4" id="modgrid"></div>
+      <h2>Touches</h2>
+      <div class="grid g4" id="specialgrid"></div>
+      <div class="arrows" id="arrowpad"></div>
+      <h2>Touches de fonction</h2>
+      <div class="grid g6" id="fgrid"></div>
+    </section>
+
+    <!-- ============================== MÉDIAS ============================== -->
+    <section id="view-media" class="view scroll" data-view="media">
+      <h2>Volume</h2>
+      <div class="card media-row" id="volrow"></div>
+      <h2>Lecture</h2>
+      <div class="card media-row" id="playrow"></div>
+      <h2>Présentation</h2>
+      <div class="slides" id="slides"></div>
+      <div class="grid g4" id="slidetools"></div>
+      <h2>Vidéo (navigateur, YouTube…)</h2>
+      <div class="grid g4" id="videotools"></div>
+    </section>
+
+    <!-- ============================ RACCOURCIS ============================ -->
+    <section id="view-shortcuts" class="view scroll" data-view="shortcuts">
+      <div id="shortcut-sections"></div>
+      <h2>Ouvrir une page sur le PC</h2>
+      <form class="card urlform" id="urlform">
+        <input id="url" type="url" inputmode="url" placeholder="youtube.com" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="btn accent" type="submit">Ouvrir</button>
+      </form>
+      <h2>Alimentation</h2>
+      <div class="grid g3" id="powergrid"></div>
+    </section>
+
+    <!-- ============================= RÉGLAGES ============================= -->
+    <section id="view-settings" class="view scroll" data-view="settings">
+      <h2>Connexion</h2>
+      <div class="card list">
+        <div class="li"><span>PC</span><span id="set-pc" class="muted">—</span></div>
+        <div class="li"><span>Adresse</span><span id="set-addr" class="muted">—</span></div>
+        <div class="li"><span>Latence</span><span id="set-lat" class="muted">—</span></div>
+        <button class="li link" id="forget" type="button">Changer de code PIN</button>
+      </div>
+      <div id="settings-sections"></div>
+      <p class="foot">PadRemote 1.0 · le serveur doit tourner sur le PC (Demarrer_PadRemote.bat).</p>
+    </section>
+  </main>
+
+  <nav id="tabbar"></nav>
+</div>
+
+<input id="live" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="enter" aria-label="Saisie directe">
+
+<div id="login" class="overlay" hidden>
+  <form class="sheet" id="loginform">
+    <img src="icon-180.png" alt="" width="72" height="72">
+    <h1>Connexion au PC</h1>
+    <p class="muted">Entrez le code PIN affiché sur le PC<br>(fenêtre PadRemote ou page QR code).</p>
+    <input id="pin" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" placeholder="••••••">
+    <p id="login-err" class="err"></p>
+    <button class="btn accent big" type="submit">Se connecter</button>
+  </form>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

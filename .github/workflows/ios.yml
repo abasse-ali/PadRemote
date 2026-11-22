@@ -1,0 +1,49 @@
+name: Compiler l'app iOS (IPA)
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Choisir la version de Xcode la plus récente
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app 2>/dev/null | grep -v -i beta | sort -V | tail -1)
+          if [ -n "$XC" ]; then sudo xcode-select -s "$XC"; fi
+          xcodebuild -version
+
+      - name: Générer le projet Xcode (XcodeGen)
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+
+      - name: Compiler (sans signature)
+        run: |
+          cd ios
+          xcodebuild -project PadRemote.xcodeproj -scheme PadRemote -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build -quiet
+
+      - name: Créer l'IPA
+        run: |
+          cd ios
+          rm -rf Payload PadRemote.ipa
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/PadRemote.app Payload/
+          zip -qry PadRemote.ipa Payload
+          ls -lh PadRemote.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PadRemote-ipa
+          path: ios/PadRemote.ipa
+          retention-days: 30
