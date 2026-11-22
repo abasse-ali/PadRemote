@@ -68,6 +68,28 @@ Ensuite, l'app se reconnecte toute seule au dernier PC, y compris si son adresse
 
 **Modificateurs** (Ctrl, Alt, Maj, Win) : 1 toucher les active pour la prochaine touche ou le prochain clic (Ctrl + clic, Maj + flèches…), 2 touchers les verrouillent.
 
+## Allumer le PC à distance (Wake-on-LAN)
+
+Le bouton **Allumer le PC** se trouve à quatre endroits : onglet Raccourcis → Alimentation, menu « … » en haut, écran « Hors ligne » du pavé, et appui long sur un PC récent dans l'écran de connexion. L'app envoie un « paquet magique » à la carte réseau du PC, puis se reconnecte dès que le serveur a démarré.
+
+**À préparer une fois :**
+
+1. **Connectez-vous une fois au PC allumé** : l'app mémorise ses adresses MAC.
+2. **Branchez le câble Ethernet** et laissez le portable **sur secteur**. Le Wi-Fi ne permet pratiquement jamais de rallumer un PC éteint.
+3. Vérifiez la carte réseau Ethernet. Dans le *Gestionnaire de périphériques*, ouvrez la carte Ethernet (ici Realtek 2.5GbE) :
+   - onglet *Gestion de l'alimentation* : cochez « Autoriser ce périphérique à sortir l'ordinateur du mode veille » ;
+   - onglet *Avancé* : vérifiez que « Wake on Magic Packet » est activé.
+4. **Désactivez le démarrage rapide** de Windows pour pouvoir réveiller le PC depuis l'arrêt complet : *Panneau de configuration → Options d'alimentation → Choisir l'action des boutons d'alimentation* → décochez « Activer le démarrage rapide ».
+5. Dans le BIOS/UEFI, activez l'option « Wake on LAN » (ou « Power On by PCI-E ») si elle existe.
+6. Lancez `Demarrage_auto_activer.bat` pour que PadRemote démarre avec Windows.
+
+**Limite d'iOS.** Apple réserve la diffusion réseau (« broadcast ») aux apps qui ont reçu son autorisation *multicast*, accordée sur demande aux comptes développeurs payants. Sans elle, l'app envoie le signal directement à l'adresse IP du PC :
+
+- **depuis la veille**, cela fonctionne en général, car la carte réseau reste joignable ;
+- **depuis l'arrêt complet**, cela ne fonctionne que si le PC a été éteint il y a peu (environ 20 minutes).
+
+Pour réveiller le PC à coup sûr après une longue extinction, utilisez la fonction Wake-on-LAN de votre box si elle en propose une.
+
 ## Dépannage
 
 - **Le PC n'apparaît pas dans l'app**
