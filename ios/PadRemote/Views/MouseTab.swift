@@ -19,7 +19,7 @@ struct MouseTab: View {
                     }
                     .overlay {
                         if client.status != .online {
-                            OfflineOverlay().allowsHitTesting(false)
+                            OfflineOverlay()
                         }
                     }
                     .overlay(alignment: .topTrailing) {
@@ -125,6 +125,20 @@ struct OfflineOverlay: View {
                 Text("Vérifiez que PadRemote tourne sur le PC.")
                     .font(.footnote)
                     .foregroundStyle(Theme.muted)
+                if client.canWake {
+                    Button {
+                        client.wake()
+                    } label: {
+                        Label("Allumer le PC", systemImage: "power")
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 10)
+                            .background(Capsule().fill(Theme.ok.opacity(0.2)))
+                            .overlay(Capsule().stroke(Theme.ok.opacity(0.6), lineWidth: 1))
+                            .foregroundStyle(Theme.ok)
+                    }
+                    .padding(.top, 10)
+                }
             }
         }
     }

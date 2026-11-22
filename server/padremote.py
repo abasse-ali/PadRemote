@@ -14,6 +14,7 @@ import re
 import secrets
 import socket
 import struct
+import subprocess
 import sys
 import threading
 import time
@@ -98,6 +99,47 @@ def lan_ips():
 
 def is_local(ip):
     return ip in ("127.0.0.1", "::1") or ip.startswith("::ffff:127.")
+
+
+WOL_MACS = []  # adresses MAC pour le réveil (Wake-on-LAN), Ethernet en premier
+
+
+def detect_wol_macs():
+    """Adresses MAC des cartes réseau physiques, pour que l'iPhone puisse rallumer le PC."""
+    script = (
+        "[Console]::OutputEncoding = [Text.Encoding]::UTF8; "
+        "Get-NetAdapter -Physical | Where-Object { $_.MacAddress } | "
+        "Select-Object InterfaceDescription, MacAddress, PhysicalMediaType | ConvertTo-Json -Compress"
+    )
+    try:
+        out = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+            capture_output=True, encoding="utf-8", errors="replace", timeout=30,
+            creationflags=0x08000000,  # CREATE_NO_WINDOW
+        ).stdout
+        data = json.loads(out or "[]")
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return []
+    if isinstance(data, dict):
+        data = [data]
+    wired, wifi = [], []
+    for adapter in data if isinstance(data, list) else []:
+        desc = str(adapter.get("InterfaceDescription", ""))
+        mac = str(adapter.get("MacAddress", "")).replace("-", ":").upper()
+        media = str(adapter.get("PhysicalMediaType", ""))
+        if not re.fullmatch(r"([0-9A-F]{2}:){5}[0-9A-F]{2}", mac):
+            continue
+        if re.search(r"apple|ndis|bluetooth|virtual|vpn|tap-|hyper-v|vmware|virtualbox", desc, re.I):
+            continue
+        (wifi if "802.11" in media else wired).append(mac)
+    return wired + wifi
+
+
+def _load_wol_macs():
+    macs = detect_wol_macs()
+    WOL_MACS[:] = macs
+    if macs:
+        log("Réveil à distance (Wake-on-LAN) : " + ", ".join(macs))
 
 
 # ------------------------------------------------------------------ websocket
@@ -283,7 +325,10 @@ async def ws_session(reader, writer, headers, ip):
         return
     _fails.pop(ip, None)
 
-    await ws.send({"t": "ok", "name": HOSTNAME, "power": bool(CONFIG.get("allow_power", True)), "v": VERSION})
+    await ws.send({
+        "t": "ok", "name": HOSTNAME, "power": bool(CONFIG.get("allow_power", True)), "v": VERSION,
+        "macs": list(WOL_MACS),
+    })
     log(f"iPhone connecté : {ip}")
     ctrl = wininput.Controller()
     loop = asyncio.get_running_loop()
@@ -439,6 +484,7 @@ async def serve(host, port, open_browser):
             webbrowser.open(f"http://127.0.0.1:{port}/pair")
         return 1
 
+    threading.Thread(target=_load_wol_macs, name="wol", daemon=True).start()
     ips = lan_ips()
     mdns = bonjour.BonjourService(HOSTNAME, port, log=log)
     mdns_ok = host in ("0.0.0.0", "") and mdns.start()

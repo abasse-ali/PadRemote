@@ -54,7 +54,7 @@ struct ConnectView: View {
                 }
 
                 if !client.saved.isEmpty {
-                    Section("Récents") {
+                    Section {
                         ForEach(client.saved) { pc in
                             Button {
                                 if pc.pin.isEmpty {
@@ -65,8 +65,21 @@ struct ConnectView: View {
                             } label: {
                                 row(icon: "clock.arrow.circlepath", title: pc.displayName, detail: "\(pc.host):\(pc.port)")
                             }
+                            .contextMenu {
+                                if !client.wakeMacs(for: pc).isEmpty {
+                                    Button {
+                                        client.wake(pc)
+                                    } label: {
+                                        Label("Allumer le PC", systemImage: "power")
+                                    }
+                                }
+                            }
                         }
                         .onDelete { client.removeSaved(at: $0) }
+                    } header: {
+                        Text("Récents")
+                    } footer: {
+                        Text("Appui long sur un PC : « Allumer le PC » (réveil à distance).")
                     }
                 }
 

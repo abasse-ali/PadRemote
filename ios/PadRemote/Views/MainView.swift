@@ -64,6 +64,11 @@ struct StatusHeader: View {
             }
             Menu {
                 Button {
+                    client.wake()
+                } label: {
+                    Label("Allumer le PC", systemImage: "power")
+                }
+                Button {
                     client.disconnect()
                 } label: {
                     Label("Changer de PC", systemImage: "arrow.left.arrow.right")

@@ -123,6 +123,10 @@ struct ShortcutsTab: View {
                 .card(padding: 6)
 
                 SectionTitle(title: "Alimentation")
+                KeyButton(title: "Allumer le PC", icon: "power.circle.fill",
+                          look: .cap(height: 52, fill: Theme.ok.opacity(0.18), stroke: Theme.ok.opacity(0.6), fg: Theme.ok)) {
+                    client.wake()
+                }
                 LazyVGrid(columns: three, spacing: 8) {
                     ForEach(powerActions) { p in
                         KeyButton(title: p.title, icon: p.icon,

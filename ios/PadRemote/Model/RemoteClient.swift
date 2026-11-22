@@ -119,6 +119,10 @@ final class RemoteClient: ObservableObject {
     }
 
     private func store(_ pc: SavedPC) {
+        var pc = pc
+        if pc.macs == nil {
+            pc.macs = saved.first(where: { $0.id == pc.id || ($0.host == pc.host && $0.port == pc.port) })?.macs
+        }
         saved.removeAll { $0.id == pc.id || ($0.host == pc.host && $0.port == pc.port) }
         saved.insert(pc, at: 0)
         PCStore.save(saved)
@@ -222,6 +226,9 @@ final class RemoteClient: ObservableObject {
             powerAllowed = (m["power"] as? Bool) ?? true
             if var t = target {
                 t.name = serverName
+                if let macs = m["macs"] as? [String], !macs.isEmpty {
+                    t.macs = macs
+                }
                 target = t
                 store(t)
             }
@@ -353,6 +360,42 @@ final class RemoteClient: ObservableObject {
 
     func power(_ action: String) {
         send(["t": "pw", "a": action])
+    }
+
+    // MARK: - Allumer le PC (Wake-on-LAN)
+
+    func wakeMacs(for pc: SavedPC?) -> [String] {
+        guard let pc = pc else { return [] }
+        if let macs = pc.macs, !macs.isEmpty { return macs }
+        let known = saved.first { $0.id == pc.id || ($0.host == pc.host && $0.port == pc.port) }
+        return known?.macs ?? []
+    }
+
+    var canWake: Bool { !wakeMacs(for: target).isEmpty }
+
+    /// Envoie le signal de réveil, puis se (re)connecte : l'app attend que le PC ait démarré.
+    func wake(_ pc: SavedPC? = nil) {
+        guard let pc = pc ?? target else { return }
+        let macs = wakeMacs(for: pc)
+        guard !macs.isEmpty else {
+            showToast("Connectez-vous une fois au PC allumé pour activer « Allumer le PC ».")
+            return
+        }
+        let host = pc.host
+        DispatchQueue.global(qos: .userInitiated).async {
+            for _ in 0..<3 {
+                WakeOnLan.send(macs: macs, host: host)
+                Thread.sleep(forTimeInterval: 0.2)
+            }
+        }
+        Haptics.click()
+        showToast("Signal de réveil envoyé à \(pc.displayName)")
+        if target == nil, !pc.pin.isEmpty {
+            connect(pc)
+        } else if status != .online {
+            retry = 0
+            open()
+        }
     }
 
     @discardableResult

@@ -6,6 +6,8 @@ struct SavedPC: Codable, Equatable, Identifiable {
     var host: String
     var port: Int
     var pin: String
+    /// Adresses MAC du PC (Ethernet en premier) pour le rallumer à distance.
+    var macs: [String]? = nil
 
     var id: String { name.isEmpty ? "\(host):\(port)" : name }
     var displayName: String { name.isEmpty ? host : name }
